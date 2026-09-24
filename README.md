@@ -1,5 +1,7 @@
 # nairobi-dt
 
+[![CI](https://github.com/Odero54/nairobi-dt/actions/workflows/ci.yml/badge.svg)](https://github.com/Odero54/nairobi-dt/actions/workflows/ci.yml)
+
 A 5G-enabled autonomous digital twin for concurrent urban traffic and flash flood
 mitigation in Nairobi, with the central business district as the analysis core and
 Nairobi County as the ingestion extent.
@@ -69,6 +71,9 @@ uv run ruff check src tests scripts && uv run mypy
 
 The notebooks read OpenStreetMap through the osmnx cache in `cache/` when it is
 present, and query OSM live when it is not.
+
+CI (`.github/workflows/ci.yml`) runs the same checks, plus
+`openspec validate --all --strict`, on every push to `main` and every pull request.
 
 ---
 

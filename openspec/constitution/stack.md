@@ -437,3 +437,15 @@ npm --prefix web ci          # TypeScript, outside containers
 Ubuntu is the reference platform. QGIS is a manual inspection tool, not a pipeline
 dependency — nothing in the build may require it, and nothing in any container
 depends on it.
+### Continuous integration
+
+**GitHub Actions** (`.github/workflows/ci.yml`) runs on every push to `main` and every
+pull request, as three jobs: ruff, mypy and the offline pytest suite; the notebooks
+under `pytest --nbmake`; and `openspec validate --all --strict`. Actions are pinned
+by commit SHA and uv, Python and OpenSpec by version (P2). The notebook job is the
+only one with network access to OpenStreetMap; its osmnx responses are cached and
+keyed on `config/study_area.yaml`.
+
+*Rejected:* GitLab CI and self-hosted runners (the repository lives on GitHub, and
+there is no server to host a runner). Container builds join CI when the compose
+files land.

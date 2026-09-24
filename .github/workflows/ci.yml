@@ -1,0 +1,66 @@
+name: CI
+
+# Gates from openspec/constitution/project.md (Code, Tests, Definition of done).
+# Actions are pinned by commit SHA, and tool versions are pinned, for reproducibility (P2).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.11.32"
+  PYTHON_VERSION: "3.12"
+  OPENSPEC_VERSION: "1.9.0"
+
+jobs:
+  python:
+    name: Lint, type-check, test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync --locked --extra dev
+      - run: uv run ruff check src tests scripts
+      - run: uv run mypy
+      - run: uv run pytest   # offline by policy; network is confined to fetch_*
+
+  notebooks:
+    name: Execute notebooks
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+        with:
+          version: ${{ env.UV_VERSION }}
+          python-version: ${{ env.PYTHON_VERSION }}
+          enable-cache: true
+      - run: uv sync --locked --extra dev
+      # cache/ is not committed. The first run queries OpenStreetMap live; later runs
+      # reuse the responses until the study-area configuration changes.
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: cache
+          key: osmnx-${{ hashFiles('config/study_area.yaml') }}
+      - run: uv run pytest --nbmake --nbmake-timeout=600 notebooks/
+
+  openspec:
+    name: Validate specs
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - run: npx --yes @fission-ai/openspec@${{ env.OPENSPEC_VERSION }} validate --all --strict --no-interactive
