@@ -1,0 +1,63 @@
+# Step 0 — Study area definition
+# Three nested spatial tiers:
+#   core   : CBD analysis polygon — every KPI is measured inside this
+#   domain : core buffered outward — simulated, but not scored, to remove edge effects
+#   county : Nairobi County — the data-ingestion extent
+
+crs:
+  geographic: "EPSG:4326"   # storage and data exchange
+  analysis: "EPSG:32737"    # WGS 84 / UTM zone 37S — all metric operations (areas, buffers, distances)
+  web: "EPSG:3857"          # web tiles and CesiumJS imagery only — never for measurement
+
+# Search window for OSM queries only. It does not define the study area;
+# the core polygon is derived from road intersections inside it.
+seed_bbox: [36.805, -1.300, 36.840, -1.270]   # west, south, east, north
+
+core:
+  # Boundary roads in ring order (clockwise from the west side).
+  # Corners are computed between each consecutive pair, wrapping around.
+  boundary_ring:
+    - key: uhuru
+      names: ["Uhuru Highway"]
+    - key: university
+      names: ["University Way"]
+    - key: kirinyaga
+      names: ["Kirinyaga Road", "Kirinyaga Rd."]
+    - key: ring_road
+      names: ["Ring Road"]
+    - key: haile_selassie
+      names: ["Haile Selassie Avenue"]
+
+  # Points that must lie inside the core. Where boundary roads do not meet
+  # (e.g. University Way and Kirinyaga Road), these close the ring.
+  # lonlat is pinned so the boundary does not depend on a live geocoder (P2). The
+  # values were geocoded from the first query on 2026-09-24; queries record how.
+  landmarks:
+    - key: globe_roundabout
+      queries: ["Globe Roundabout, Nairobi, Kenya"]
+      lonlat: [36.821248, -1.278654]
+    - key: otc
+      queries: ["OTC, Nairobi, Kenya", "OTC Bus Terminus, Nairobi, Kenya"]
+      lonlat: [36.831253, -1.284684]
+
+  # Roads representing the main town centre. Validated, not used to build the polygon.
+  interior_roads:
+    - key: moi_avenue
+      names: ["Moi Avenue"]
+    - key: kenyatta_avenue
+      names: ["Kenyatta Avenue"]
+
+  corner_gap_tolerance_m: 150     # named OSM ways often stop short at roundabouts
+  min_interior_length_m: 300      # metres of each interior road that must fall inside core
+
+domain:
+  buffer_m: 1000
+
+county:
+  query: "Nairobi County, Kenya"
+
+outputs:
+  dir: "data/processed"
+  geopackage: "study_area.gpkg"
+  map: "study_area_map.html"
+  report: "study_area_report.json"

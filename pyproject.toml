@@ -1,0 +1,56 @@
+[project]
+name = "nairobi-dt"
+version = "0.1.0"
+description = "5G-enabled autonomous digital twin for traffic and flash flood mitigation in Nairobi"
+requires-python = ">=3.11"
+dependencies = [
+    "geopandas>=1.0",
+    "shapely>=2.0",
+    "pyproj>=3.6",
+    "osmnx>=2.0",
+    "pyyaml>=6.0",
+    "folium>=0.16",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ipyleaflet>=0.20.0",
+    "jupyterlab>=4.6.4",
+    "jupytext>=1.19.5",
+    "lonboard>=0.13.0",
+    "mypy>=2.3.1",
+    "nbmake>=1.5.5",
+    "nbstripout>=0.9.1",
+    "pandas-stubs>=2.3.3.260113",
+    "papermill>=2.7.0",
+    "pyarrow>=25.0.1",
+    "pytest>=8",
+    "ruff>=0.16.8",
+    "types-pyyaml>=6.0.12.20260906",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-include = ["*.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+
+[tool.mypy]
+files = ["src"]
+ignore_missing_imports = true
+
+[tool.jupytext]
+formats = "ipynb,py:percent"

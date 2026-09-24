@@ -1,0 +1,61 @@
+# Step 0 — Latency budget
+#
+# Latency is specified END-TO-END (sensor event -> actuation or display), not as
+# air-interface latency. 5G is one segment of the path; the budget states how much
+# of each class it may consume. Targets are design hypotheses: Step 4 measures
+# whether the deployed 5G network meets them.
+#
+# All thresholds are p95 unless stated. p50 and p99 are reported alongside.
+
+percentile: 95
+
+classes:
+  L1_actuation:
+    description: >
+      Safety-relevant control commands: emergency-vehicle signal pre-emption,
+      closing a flooded link to routing.
+    e2e_ms: 250
+    network_rtt_ms: 50
+    rationale: >
+      Must complete well inside one 1 s control step, leaving margin for agent
+      negotiation. The network share sits within the 3GPP V2X requirement range
+      (TS 22.186) and far above the IMT-2020 user-plane minimum (ITU-R M.2410).
+
+  L2_traffic_state:
+    description: Queue, count and speed updates from intersections to agents.
+    e2e_ms: 1000
+    network_rtt_ms: 100
+    rationale: Matches the 1 s simulation and control step; staler state degrades control.
+
+  L3_flood_state:
+    description: Inundation extent and depth updates on the road network.
+    e2e_ms: 60000
+    network_rtt_ms: 500
+    rationale: >
+      Flash flood onset develops over minutes. A 60 s refresh is well inside
+      onset time while tolerating sparse, intermittent gauges.
+
+  L4_visualisation:
+    description: 3D twin refresh for operators.
+    e2e_ms: 2000
+    network_rtt_ms: 200
+    rationale: Operator decision support, not closed-loop control.
+
+  L5_batch:
+    description: Earth observation ingestion and historical archives.
+    e2e_ms: 86400000   # 24 h
+    network_rtt_ms: null
+    rationale: Bounded by satellite revisit, not by the network.
+
+# Transport design: cameras run inference at the edge and publish counts, not video.
+# Keeps uplink demand per intersection in the kbit/s range and makes the design
+# viable on sparse or congested cells.
+throughput:
+  per_intersection_uplink_kbps: 64
+  raw_video_fallback_mbps: 6      # only for incident verification, not continuous
+
+reliability:
+  max_message_loss_rate: 0.01     # L1 and L2
+  max_age_of_information_s:       # freshness at the point of decision
+    L2_traffic_state: 2
+    L3_flood_state: 120

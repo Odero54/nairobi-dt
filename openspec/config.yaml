@@ -1,0 +1,37 @@
+schema: spec-driven
+
+# Injected into every artifact's instructions. The constitution is the authority;
+# this is a pointer plus the rules that bite on every change.
+context: |
+  nairobi-dt: a 5G-enabled autonomous digital twin for concurrent urban traffic and
+  flash flood mitigation in Nairobi. MSc/PhD research code, not a production system.
+
+  Read before writing any artifact:
+    openspec/constitution/project.md  mission, principles P1-P4, capabilities, workflow, glossary
+    openspec/constitution/stack.md    technology decisions and rejected alternatives
+    openspec/constitution/roadmap.md  step sequence, dependencies, acceptance criteria, risks
+
+  Workflow per roadmap step: explore in notebooks/NN-topic.ipynb first (NN = step
+  number), then propose, approve, apply, archive. Findings graduate from notebooks
+  into src/nairobi_dt/ with a test; pipeline code never imports a notebook.
+
+  Python 3.11+, uv, geopandas/shapely 2, osmnx 2. Network access confined to fetch_*
+  functions so tests run offline. Thresholds live in config/*.yaml, never in code.
+  CRS policy: EPSG:32737 for measurement, EPSG:4326 for storage and exchange,
+  EPSG:3857 for web tiles only.
+
+rules:
+  proposal:
+    - Name the roadmap step and cite the notebooks/NN-*.ipynb that informed the change; if none exist yet, stop and say so.
+    - One change, one capability from the table in project.md.
+    - List any new dependency; stack.md must be amended in the same change.
+  specs:
+    - Requirements use SHALL or MUST and carry at least one WHEN/THEN scenario.
+    - Requirements that encode research decisions (thresholds, formulas, staleness limits) state the value, name the config/*.yaml key that holds it, and cite its source.
+    - Where data is estimated or interpolated, a requirement states how the estimate is flagged (P4).
+  design:
+    - Record rejected alternatives and the reason, as stack.md does.
+    - State which principle (P1-P4) each significant decision serves.
+  tasks:
+    - Every implementation task has a matching test task; tests run offline unless marked integration.
+    - Include a task to draft the matching docs/paper/ section and one to validate with `openspec validate --strict`.

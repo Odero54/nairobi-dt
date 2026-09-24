@@ -1,0 +1,54 @@
+# Step 0 — Key performance indicators
+#
+# Scope: every KPI is computed inside the CBD core polygon only. The buffer domain
+# is simulated to remove edge effects but never scored.
+# Direction: "min" = lower is better, "max" = higher is better.
+
+flood:
+  passability_depth_m: 0.30   # links above this depth are treated as impassable (literature value; cite in Ch. 3)
+
+kpis:
+  traffic:
+    mean_delay:            {unit: s/veh, direction: min, definition: "Mean time lost versus free-flow travel time"}
+    mean_queue_length:     {unit: veh,   direction: min, definition: "Mean halted vehicles per signalised approach"}
+    max_queue_length:      {unit: veh,   direction: min, definition: "Worst approach queue in the scenario"}
+    throughput:            {unit: veh/h, direction: max, definition: "Vehicles completing trips out of the core"}
+    travel_time_index:     {unit: ratio, direction: min, definition: "Mean travel time / free-flow travel time"}
+
+  emergency:
+    emv_travel_time:       {unit: s,     direction: min, definition: "Emergency vehicle origin-to-destination time"}
+    emv_delay_ratio:       {unit: ratio, direction: min, definition: "EMV travel time / its free-flow travel time"}
+
+  flood:
+    flooded_link_entries:  {unit: veh,   direction: min, definition: "Vehicles entering links above passability depth"}
+    routing_avoidance_rate:
+      unit: ratio
+      direction: max
+      definition: >
+        1 - (vehicles entering impassable links / vehicles whose original route
+        crossed an impassable link)
+    detection_to_closure:  {unit: s,     direction: min, definition: "Flood detection to link removal from routing"}
+
+  system:
+    e2e_latency:           {unit: ms,    direction: min, definition: "Per latency class, p50/p95/p99 (see latency_budget.yaml)"}
+    network_rtt:           {unit: ms,    direction: min, definition: "Measured 5G round-trip time, p50/p95/p99"}
+    uplink_throughput:     {unit: Mbit/s, direction: max, definition: "Sustained measured 5G uplink"}
+    message_loss_rate:     {unit: ratio, direction: min, definition: "Published but undelivered messages"}
+    age_of_information:    {unit: s,     direction: min, definition: "Staleness of state at the moment an agent decides"}
+
+  fusion:
+    flood_extent_csi:      {unit: ratio, direction: max, definition: "Critical success index against a reference extent"}
+
+# Control strategies compared in every scenario (Step 8)
+baselines:
+  - fixed_time      # current practice
+  - actuated        # SUMO actuated control
+  - mas             # proposed multi-agent control
+
+# Primary claims tested; each maps to an objective
+headline:
+  SO1: [mean_delay, emv_travel_time]
+  SO2: [e2e_latency, network_rtt]
+  SO3: [routing_avoidance_rate, flood_extent_csi]
+  SO4: [e2e_latency]        # L4_visualisation class
+  SO5: [mean_queue_length, flooded_link_entries, detection_to_closure]
