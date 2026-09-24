@@ -14,10 +14,12 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = [
+    "earthengine-api>=1.7.45",
     "ipyleaflet>=0.20.0",
     "jupyterlab>=4.6.4",
     "jupytext>=1.19.5",
     "lonboard>=0.13.0",
+    "matplotlib>=3.11.2",
     "mypy>=2.3.1",
     "nbmake>=1.5.5",
     "nbstripout>=0.9.1",
@@ -25,7 +27,9 @@ dev = [
     "papermill>=2.7.0",
     "pyarrow>=25.0.1",
     "pytest>=8",
+    "rasterio>=1.4.4",
     "ruff>=0.16.8",
+    "sumolib==1.27.1",
     "types-pyyaml>=6.0.12.20260906",
 ]
 
