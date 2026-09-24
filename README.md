@@ -32,8 +32,8 @@ section of the methods paper.
 | 9 | `add-analytics-views` | deck.gl layers, KPI exploration | ⬜ |
 | 10 | `add-evaluation-harness` | Scenarios, KPI computation, baseline comparison | ⬜ |
 
-Step 0 was built before the project adopted OpenSpec; its notebook and spec are
-being backfilled. See `openspec/constitution/roadmap.md` for dependencies, acceptance criteria and the risk register.
+Step 0 was built before the project adopted OpenSpec; its notebook and spec were
+backfilled afterwards. See `openspec/constitution/roadmap.md` for dependencies, acceptance criteria and the risk register.
 
 ---
 

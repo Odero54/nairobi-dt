@@ -31,4 +31,4 @@
 - [x] 5.1 Record the notebook command (`uv run pytest --nbmake notebooks/`) in `README.md`; CI is a separate change
 - [x] 5.2 Confirm paper §2.1 matches the spec (ring roads, 300 m rule, landmarks)
 - [x] 5.3 `openspec validate backfill-study-area-spec --strict`
-- [ ] 5.4 Archive the change, creating `openspec/specs/study-area/spec.md`
+- [x] 5.4 Archive the change, creating `openspec/specs/study-area/spec.md`
