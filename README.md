@@ -60,20 +60,41 @@ docker compose exec web npm test               # TypeScript: units + viewport ma
 | Grafana | http://localhost:3000 |
 | MinIO console | http://localhost:9001 |
 
-Running the pipeline outside containers, for iteration:
+Running the pipeline outside containers, for iteration, uses
+[`just`](https://github.com/casey/just) as the task runner. Run `just` on its own to
+list the recipes.
 
 ```bash
-uv sync --extra dev
-uv run pytest                          # offline tests
-uv run pytest --nbmake notebooks/      # re-execute the lab notebooks
-uv run ruff check src tests scripts && uv run mypy
+just setup        # uv sync --locked --extra dev, then nbstripout --install
+just check        # lint, format check, type-check, offline tests; the quick gate before pushing
+just ci           # everything CI runs: check, notebooks, specs
 ```
+
+| Recipe | Runs |
+|---|---|
+| `setup` | `uv sync --locked --extra dev`, then `nbstripout --install` |
+| `lint` | `ruff check src tests scripts` |
+| `fix` | `ruff check --fix` — applies safe lint fixes |
+| `fmt` | `ruff format src tests scripts` |
+| `fmt-check` | `ruff format --check` — reports unformatted files, changes nothing |
+| `typecheck` | `mypy` |
+| `test *args` | `pytest`, passing extra arguments through: `just test -k crs` |
+| `notebooks` | `pytest --nbmake --nbmake-timeout=600 notebooks/` |
+| `sync-notebooks` | `jupytext --sync` — keeps each notebook and its `.py` twin in step |
+| `specs` | `openspec validate --all --strict`, at the version CI pins |
+| `study-area` | `scripts/00_build_study_area.py` |
+| `lab` | JupyterLab |
+| `check` | `lint`, `fmt-check`, `typecheck`, `test` |
+| `ci` | `check`, `notebooks`, `specs` |
+
+Each recipe is a thin wrapper over `uv run`, so the underlying commands work without
+`just` installed.
 
 The notebooks read OpenStreetMap through the osmnx cache in `cache/` when it is
 present, and query OSM live when it is not.
 
-CI (`.github/workflows/ci.yml`) runs the same checks, plus
-`openspec validate --all --strict`, on every push to `main` and every pull request.
+CI (`.github/workflows/ci.yml`) runs the same checks as `just ci` on every push to
+`main` and every pull request.
 
 ---
 
@@ -81,7 +102,7 @@ CI (`.github/workflows/ci.yml`) runs the same checks, plus
 
 ```bash
 docker compose exec pipeline uv run python scripts/00_build_study_area.py
-# or, on the host:  uv run python scripts/00_build_study_area.py
+# or, on the host:  just study-area
 ```
 
 Derives three nested spatial tiers from OpenStreetMap rather than hand-drawing them:

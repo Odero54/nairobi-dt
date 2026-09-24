@@ -33,6 +33,7 @@ jobs:
           enable-cache: true
       - run: uv sync --locked --extra dev
       - run: uv run ruff check src tests scripts
+      - run: uv run ruff format --check src tests scripts
       - run: uv run mypy
       - run: uv run pytest   # offline by policy; network is confined to fetch_*
 
