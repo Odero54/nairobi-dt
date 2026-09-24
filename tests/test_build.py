@@ -20,14 +20,19 @@ def write_config(tmp_path: Path, min_interior_m: float = 300) -> Path:
     cfg = {
         "crs": {"geographic": "EPSG:4326", "analysis": CRS, "web": "EPSG:3857"},
         "seed_bbox": [36.8, -1.3, 36.84, -1.27],
-        "core": core_cfg() | {
+        "core": core_cfg()
+        | {
             "min_interior_length_m": min_interior_m,
             "landmarks": [{"key": "centre", "queries": [], "lonlat": None}],
         },
         "domain": {"buffer_m": 1000},
         "county": {"query": "Synthetic County"},
-        "outputs": {"dir": "out", "geopackage": "sa.gpkg", "map": "map.html",
-                    "report": "report.json"},
+        "outputs": {
+            "dir": "out",
+            "geopackage": "sa.gpkg",
+            "map": "map.html",
+            "report": "report.json",
+        },
     }
     path = tmp_path / "study_area.yaml"
     path.write_text(yaml.safe_dump(cfg))
@@ -37,13 +42,16 @@ def write_config(tmp_path: Path, min_interior_m: float = 300) -> Path:
 @pytest.fixture
 def offline(monkeypatch):
     """Replace every network call with synthetic data in the analysis CRS."""
+
     def landmarks(cfg, crs_out):
-        return gpd.GeoDataFrame({"key": ["centre"], "source": ["manual"]},
-                                geometry=[Point(X0 + 500, Y0 + 500)], crs=CRS).to_crs(crs_out)
+        return gpd.GeoDataFrame(
+            {"key": ["centre"], "source": ["manual"]}, geometry=[Point(X0 + 500, Y0 + 500)], crs=CRS
+        ).to_crs(crs_out)
 
     def county(query, crs_out):
-        return gpd.GeoDataFrame(geometry=[box(X0 - 5000, Y0 - 5000, X0 + 6000, Y0 + 6000)],
-                                crs=CRS).to_crs(crs_out)
+        return gpd.GeoDataFrame(
+            geometry=[box(X0 - 5000, Y0 - 5000, X0 + 6000, Y0 + 6000)], crs=CRS
+        ).to_crs(crs_out)
 
     monkeypatch.setattr(sa, "fetch_roads", lambda bbox, crs_out: roads_fixture().to_crs(crs_out))
     monkeypatch.setattr(sa, "fetch_landmarks", landmarks)
