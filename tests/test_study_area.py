@@ -23,9 +23,9 @@ X0, Y0 = 257_000, 9_857_000  # somewhere near central Nairobi in UTM 37S
 def roads_fixture(gap_ne: float = 0.0) -> gpd.GeoDataFrame:
     """Square ring: west, north, east, south. The NE corner can be opened by gap_ne."""
     lines = {
-        "West Road":  LineString([(X0, Y0 - 200), (X0, Y0 + 1200)]),        # overshoots both ends
+        "West Road": LineString([(X0, Y0 - 200), (X0, Y0 + 1200)]),  # overshoots both ends
         "North Road": LineString([(X0 - 100, Y0 + 1000), (X0 + 1000 - gap_ne, Y0 + 1000)]),
-        "East Road":  LineString([(X0 + 1000, Y0 + 1000 - gap_ne), (X0 + 1000, Y0)]),
+        "East Road": LineString([(X0 + 1000, Y0 + 1000 - gap_ne), (X0 + 1000, Y0)]),
         "South Road": LineString([(X0 + 1100, Y0), (X0 - 100, Y0)]),
         "Middle Ave": LineString([(X0 + 500, Y0 + 50), (X0 + 500, Y0 + 950)]),
     }
@@ -70,8 +70,9 @@ def test_missing_road_raises():
 
 def test_small_gap_uses_midpoint_and_records_distance():
     roads = roads_fixture(gap_ne=60)
-    corner = corner_between(select_road(roads, ["North Road"]), select_road(roads, ["East Road"]),
-                            "n", "e")
+    corner = corner_between(
+        select_road(roads, ["North Road"]), select_road(roads, ["East Road"]), "n", "e"
+    )
     assert corner.method == "nearest_gap"
     assert corner.gap_m == pytest.approx(84.85, abs=0.1)  # diagonal across a 60 m notch
 
@@ -125,8 +126,12 @@ def test_landmark_outside_core_fails_validation():
 
 def test_collinear_corners_and_landmarks_fail():
     # Two crossing roads give one corner twice; a landmark on the same line keeps it 1-D.
-    cfg = core_cfg() | {"boundary_ring": [{"key": "w", "names": ["West Road"]},
-                                          {"key": "n", "names": ["North Road"]}]}
+    cfg = core_cfg() | {
+        "boundary_ring": [
+            {"key": "w", "names": ["West Road"]},
+            {"key": "n", "names": ["North Road"]},
+        ]
+    }
     on_line = landmarks_fixture({"lm": Point(X0, Y0 + 500)})
     with pytest.raises(StudyAreaError):
         build_core(roads_fixture(), on_line, cfg)
@@ -139,8 +144,13 @@ def test_manual_lonlat_skips_geocoding(monkeypatch):
         raise AssertionError(f"geocoder called for {query}")
 
     monkeypatch.setattr(ox, "geocode", no_geocoding)
-    cfg = [{"key": "globe", "queries": ["Globe Roundabout, Nairobi, Kenya"],
-            "lonlat": [36.821248, -1.278654]}]
+    cfg = [
+        {
+            "key": "globe",
+            "queries": ["Globe Roundabout, Nairobi, Kenya"],
+            "lonlat": [36.821248, -1.278654],
+        }
+    ]
     lm = fetch_landmarks(cfg, CRS)
     assert lm["source"].tolist() == ["manual"]
     assert lm.crs.to_epsg() == 32737
