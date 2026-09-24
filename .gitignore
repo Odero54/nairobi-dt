@@ -8,3 +8,4 @@ data/processed/*
 .ruff_cache/
 .ipynb_checkpoints/
 cache/
+.env
